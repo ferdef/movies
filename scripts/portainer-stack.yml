@@ -1,0 +1,58 @@
+# Stack de Portainer para Movies Tracker
+# Copia este contenido en Portainer como un nuevo Stack
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: movies_app
+      POSTGRES_USER: movies_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - movies_postgres_data:/var/lib/postgresql/data
+    networks:
+      - movies_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  backend:
+    image: movies-backend:latest
+    environment:
+      DATABASE_URL: postgresql://movies_user:${POSTGRES_PASSWORD}@postgres:5432/movies_app
+      TMDB_API_KEY: ${TMDB_API_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+    depends_on:
+      - postgres
+    networks:
+      - movies_network
+      - swag_network  # Red de SWAG para proxy reverso
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  frontend:
+    image: movies-frontend:latest
+    networks:
+      - movies_network
+      - swag_network  # Red de SWAG para proxy reverso
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  movies_postgres_data:
+    external: false
+
+networks:
+  movies_network:
+    driver: overlay
+    attachable: true
+  swag_network:
+    external: true  # Red existente de SWAG
