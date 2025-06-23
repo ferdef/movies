@@ -31,7 +31,7 @@ Una aplicación web personal similar a JustWatch para rastrear películas y seri
 
 1. **Clona el repositorio**:
    ```bash
-   git clone <tu-repo>
+   git clone https://github.com/ferdef/movies.git
    cd Movies
    ```
 
